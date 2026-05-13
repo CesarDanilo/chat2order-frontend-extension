@@ -3,18 +3,26 @@
   "description": "A chatbot that helps you order food",
   "version": "1.0.0",
   "manifest_version": 3,
-
-  "permissions": ["sidePanel"],
-
+  "permissions": [
+    "sidePanel"
+  ],
   "side_panel": {
     "default_path": "index.html"
   },
-
   "background": {
     "service_worker": "background.js"
   },
-
   "action": {
     "default_title": "Open Chat2Order"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://web.whatsapp.com/*"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ]
 }
