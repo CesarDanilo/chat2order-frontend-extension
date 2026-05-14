@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { SquareArrowRightEnter } from "lucide-react";
+import icon from "./assets/icon.png";
 
 type OrderItem = {
   id: string;
@@ -89,9 +91,14 @@ function App() {
 
       {/* CARD IMPORTAÇÃO */}
       <div className="w-[380px] bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-3">
-        <h1 className="text-lg font-semibold text-zinc-900">
-          📦 Chat2Order
-        </h1>
+        <div className="flex justify-start items-center gap-1">
+          <div className="w-5 h-5">
+            <img src={icon} alt="" />
+          </div>
+          <h1 className="text-lg font-semibold text-zinc-900">
+            Chat2Order
+          </h1>
+        </div>
         <p className="text-sm text-zinc-500">
           Importe a conversa do WhatsApp e gere pedidos automaticamente.
         </p>
@@ -105,8 +112,9 @@ function App() {
         <Button
           onClick={handleImport}
           disabled={loading}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md"
         >
+          <SquareArrowRightEnter size={16} />
           {loading ? "Importando..." : "Importar Conversa"}
         </Button>
         <span className="text-center text-xs text-zinc-400 mt-4">Processamento seguro • Dados não são compartilhados</span>
