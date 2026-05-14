@@ -90,8 +90,17 @@ function App() {
       {/* CARD IMPORTAÇÃO */}
       <div className="w-[380px] bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-3">
         <h1 className="text-lg font-semibold text-zinc-900">
-          Chat2Order
+          📦 Chat2Order
         </h1>
+        <p className="text-sm text-zinc-500">
+          Importe a conversa do WhatsApp e gere pedidos automaticamente.
+        </p>
+
+        <div className="text-xs text-zinc-600 flex flex-col gap-1">
+          <p>1. Abra o WhatsApp Web</p>
+          <p>2. Clique em "Importar Conversa"</p>
+          <p>3. O pedido será gerado automaticamente</p>
+        </div>
 
         <Button
           onClick={handleImport}
@@ -100,13 +109,19 @@ function App() {
         >
           {loading ? "Importando..." : "Importar Conversa"}
         </Button>
+        <span className="text-center text-xs text-zinc-400 mt-4">Processamento seguro • Dados não são compartilhados</span>
       </div>
 
       {/* CARD PEDIDOS */}
+      {orders.length === 0 && !loading && (
+        <div className="text-center text-sm text-zinc-400 mt-4">
+          Nenhum pedido importado ainda.
+        </div>
+      )}
       {orders.map((order) => (
         <div
           key={order.id}
-          className="w-[380px] bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-4"
+          className="w-[380px] bg-white rounded-2xl shadow-md p-5 flex flex-col gap-3"
         >
           <div>
             <p className="text-xs text-zinc-500">Cliente</p>
