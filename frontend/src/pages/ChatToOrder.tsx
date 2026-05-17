@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { SquareArrowRightEnter } from "lucide-react";
+import { SquareArrowRightEnter, SquareArrowRightExit } from "lucide-react";
 import icon from "../../src/assets/icon.png";
 
 type OrderItem = {
@@ -55,9 +55,8 @@ function ChatToOrder() {
           }
 
           try {
-            const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4NWMzNDEzNi05ZmNkLTQyYjYtYWE4ZS03NzFkZjdhMGZmZDkiLCJpYXQiOjE3Nzg4ODMwODMsImV4cCI6MTc3ODk2OTQ4M30.TFRv2gcCR95Bd8oFcYujekyy1NuL-hy-MxqBSv0XRno";
-
-            const apiResponse = await fetch("http://127.0.0.1:3000/api/parse", {
+            const token = localStorage.getItem("token");
+            const apiResponse = await fetch(import.meta.env.VITE_API_URL + "/api/parse", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -92,12 +91,16 @@ function ChatToOrder() {
       {/* CARD IMPORTAÇÃO */}
       <div className="w-[380px] bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-3">
         <div className="flex justify-start items-center gap-1">
-          <div className="w-5 h-5">
-            <img src={icon} alt="" />
+          <div className="flex justify-start items-center gap-1">
+            <div className="w-5 h-5">
+              <img src={icon} alt="" />
+            </div>
+            <h1 className="text-lg font-semibold text-zinc-900">
+              Chat2Order
+            </h1>
           </div>
-          <h1 className="text-lg font-semibold text-zinc-900">
-            Chat2Order
-          </h1>
+          <SquareArrowRightExit />
+
         </div>
         <p className="text-sm text-zinc-500">
           Importe a conversa do WhatsApp e gere pedidos automaticamente.

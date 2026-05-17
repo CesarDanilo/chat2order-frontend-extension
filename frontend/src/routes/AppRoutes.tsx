@@ -1,24 +1,28 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+  HashRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
 
 import { Login } from "../pages/Login";
-import ChatToOrder  from "../pages/ChatToOrder";
-
+import ChatToOrder from "../pages/ChatToOrder";
 import { PrivateRoute } from "./PrivateRoute";
 
 export function AppRoutes() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
-
-        {/* ROTA PÚBLICA */}
-        <Route path="/login" element={<Login />} />
-
-        {/* ROTAS PRIVADAS */}
+        <Route
+          path="/login"
+          element={<Login />}
+        />
         <Route element={<PrivateRoute />}>
-          <Route path="/" element={<ChatToOrder />} />
+          <Route
+            path="/"
+            element={<ChatToOrder />}
+          />
         </Route>
-
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }

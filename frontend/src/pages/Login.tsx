@@ -5,15 +5,13 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
+import icon from "../../src/assets/icon.png";
 import { loginService } from "@/services/auth/login.service";
 
 export function Login() {
 
   const [email, setEmail] = useState("");
-
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
 
   async function handleLogin(
@@ -49,13 +47,19 @@ export function Login() {
 
       <Card className="w-full max-w-sm rounded-2xl shadow-lg border-zinc-200">
 
-        <CardContent className="p-6 flex flex-col gap-6">
+        <CardContent className="p-6 flex flex-col justify-center gap-6">
 
-          <div className="flex flex-col gap-1 text-center">
+          <div className="flex flex-col justify-center items-center gap-1 text-center">
+            <div className="flex justify-center items-center gap-2">
+              <div className="w-6">
+                <img src={icon} alt="logo" />
+              </div>
 
-            <h1 className="text-2xl font-bold text-zinc-900">
-              Bem-vindo
-            </h1>
+              <h1 className="text-2xl font-bold text-zinc-900">
+                Bem-vindo
+              </h1>
+            </div>
+
 
             <p className="text-sm text-zinc-500">
               Entre com sua conta para continuar
