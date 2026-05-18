@@ -11,6 +11,7 @@ import icon from "../../src/assets/icon.png";
 
 interface UserData {
   email: string;
+  name?: string;
   password: string;
   confirm_password?: string;
 }
@@ -18,12 +19,14 @@ interface UserData {
 export function Login() {
 
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [createAccount, setCreateAccount] = useState(false);
 
   const User = z.object({
     email: z.string().email,
+    name: z.string().min(3),
     password: z.string().min(8),
     confirm_password: z.string().min(8),
   })
@@ -109,6 +112,24 @@ export function Login() {
               />
 
             </div>
+            {createAccount &&
+              <div className="flex flex-col gap-2">
+
+                <label className="text-sm font-medium text-zinc-700">
+                  Nome
+                </label>
+
+                <Input
+                  type="Nome"
+                  placeholder="Digite seu nome"
+                  value={name}
+                  onChange={(e) =>
+                    setName(e.target.value)
+                  }
+                />
+
+              </div>
+            }
 
             <div className="flex flex-col gap-2">
 
@@ -145,7 +166,7 @@ export function Login() {
               >
                 {loading ? "Entrando..." : "Entrar"}
               </Button>
-              <span className="mt-2 flex items-center justify-center cursor-pointer" onClick={() => setCreateAccount(!createAccount)}>{createAccount ? "Já tenho uma conta" :  "Criar conta" }</span>
+              <span className="mt-2 flex items-center justify-center cursor-pointer" onClick={() => setCreateAccount(!createAccount)}>{createAccount ? "Já tenho uma conta" : "Criar conta"}</span>
             </div>
           </form>
 
