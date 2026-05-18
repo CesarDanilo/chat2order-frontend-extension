@@ -13,7 +13,7 @@ export function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [createAccount, setCreateAccount] = useState(false);
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
 
@@ -29,6 +29,10 @@ export function Login() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function CreateAccount() {
+    setCreateAccount(true);
   }
 
   return (
@@ -92,6 +96,16 @@ export function Login() {
                   setPassword(e.target.value)
                 }
               />
+              {createAccount &&
+                <Input
+                  type="password"
+                  placeholder="Digite novamente sua senha"
+                  value={password}
+                  onChange={(e) =>
+                    setPassword(e.target.value)
+                  }
+                />
+              }
 
             </div>
 
@@ -103,15 +117,8 @@ export function Login() {
               >
                 {loading ? "Entrando..." : "Entrar"}
               </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full text-zinc-600 bg-white hover:bg-zinc-100"
-              >
-                {loading ? "Entrando..." : "Criar conta"}
-              </Button>
+              <span className="mt-2 flex items-center justify-center cursor-pointer" onClick={() => setCreateAccount(!createAccount)}>{createAccount ? "Criar conta" : "Já tenho uma conta"}</span>
             </div>
-
           </form>
 
           <p className="text-center text-xs text-zinc-400">
