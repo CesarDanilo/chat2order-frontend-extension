@@ -14,30 +14,19 @@ export function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleLogin(
-    e: React.FormEvent
-  ) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
 
     try {
-
       setLoading(true);
-
-      await loginService({
-        email,
-        password,
-      });
-
+      await loginService({ email, password });
       window.location.href = "/";
 
     } catch (error) {
-
       console.error(error);
-
       alert("Email ou senha inválidos");
 
     } finally {
-
       setLoading(false);
     }
   }
@@ -106,13 +95,22 @@ export function Login() {
 
             </div>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-emerald-600 hover:bg-emerald-700"
-            >
-              {loading ? "Entrando..." : "Entrar"}
-            </Button>
+            <div className="flex-col" >
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-emerald-600 hover:bg-emerald-700"
+              >
+                {loading ? "Entrando..." : "Entrar"}
+              </Button>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full text-zinc-600 bg-white hover:bg-zinc-100"
+              >
+                {loading ? "Entrando..." : "Criar conta"}
+              </Button>
+            </div>
 
           </form>
 
