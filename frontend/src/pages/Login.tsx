@@ -2,11 +2,18 @@
 
 import { useState } from "react";
 
+import { z } from "zod";
+import { loginService } from "@/services/auth/login.service";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import icon from "../../src/assets/icon.png";
-import { loginService } from "@/services/auth/login.service";
+
+interface UserData {
+  email: string;
+  password: string;
+  confirm_password?: string;
+}
 
 export function Login() {
 
@@ -14,25 +21,46 @@ export function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [createAccount, setCreateAccount] = useState(false);
+
+  const User = z.object({
+    email: z.string().email,
+    password: z.string().min(8),
+    confirm_password: z.string().min(8),
+  })
+
+  async function CheckUserTypes(data: UserData) {
+    try {
+      const result = User.safeParse(data);
+      return result.success;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return error.issues;
+      }
+    }
+  }
+
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
 
     try {
       setLoading(true);
+
+      const isValid = await CheckUserTypes({ email, password });
+
+      if (!isValid) {
+        alert("Email ou senha inválidos");
+      }
+
       await loginService({ email, password });
       window.location.href = "/";
 
     } catch (error) {
       console.error(error);
-      alert("Email ou senha inválidos");
 
     } finally {
       setLoading(false);
     }
-  }
-
-  async function CreateAccount() {
-    setCreateAccount(true);
   }
 
   return (
@@ -117,7 +145,7 @@ export function Login() {
               >
                 {loading ? "Entrando..." : "Entrar"}
               </Button>
-              <span className="mt-2 flex items-center justify-center cursor-pointer" onClick={() => setCreateAccount(!createAccount)}>{createAccount ? "Criar conta" : "Já tenho uma conta"}</span>
+              <span className="mt-2 flex items-center justify-center cursor-pointer" onClick={() => setCreateAccount(!createAccount)}>{createAccount ? "Já tenho uma conta" :  "Criar conta" }</span>
             </div>
           </form>
 
