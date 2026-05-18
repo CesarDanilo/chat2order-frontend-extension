@@ -12,6 +12,12 @@ interface LoginResponse {
   };
 }
 
+interface RegisterResponse {
+    name: string;
+    email: string;
+    password: string;
+}
+
 export async function loginService({
   email,
   password,
@@ -47,4 +53,30 @@ export async function loginService({
   localStorage.setItem("token", data.token);
 
   return data;
+}
+
+export async function registerService({ email, name, password }: RegisterResponse){
+  try{
+    const response = await fetch(import.meta.env.VITE_API_URL + "/user", 
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+      }),
+    })
+
+    if(!response){
+      throw new Error("Erro ao realizar cadastro")
+    }
+    return response.ok
+  }catch(error){
+    return error
+  }
 }
