@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SquareArrowRightEnter, SquareArrowRightExit } from "lucide-react";
 import icon from "../../src/assets/icon.png";
@@ -28,6 +29,7 @@ type Order = {
 function ChatToOrder() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const openDashboard = () => {
     chrome.tabs.create({
@@ -56,7 +58,7 @@ function ChatToOrder() {
 
           try {
             const token = localStorage.getItem("token");
-            const apiResponse = await fetch(import.meta.env.VITE_API_URL + "/api/parse", {
+            const apiResponse = await fetch(import.meta.env.VITE_API_URL + "/parse", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -85,12 +87,15 @@ function ChatToOrder() {
     });
   };
 
+  const handleExit = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  }
+
   return (
     <div className="w-full p-4 bg-zinc-100 min-h-screen flex flex-col items-center gap-4">
-
-      {/* CARD IMPORTAÇÃO */}
       <div className="w-[380px] bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-3">
-        <div className="flex justify-start items-center gap-1">
+        <div className="flex justify-between items-center gap-1">
           <div className="flex justify-start items-center gap-1">
             <div className="w-5 h-5">
               <img src={icon} alt="" />
@@ -99,7 +104,9 @@ function ChatToOrder() {
               Chat2Order
             </h1>
           </div>
-          <SquareArrowRightExit />
+          <div onClick={ () => {handleExit()}} className="cursor-pointer">
+            <SquareArrowRightExit className="text-zinc-400" />
+          </div>
 
         </div>
         <p className="text-sm text-zinc-500">
@@ -115,7 +122,7 @@ function ChatToOrder() {
         <Button
           onClick={handleImport}
           disabled={loading}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md cursor-pointer"
         >
           <SquareArrowRightEnter size={16} />
           {loading ? "Importando..." : "Importar Conversa"}
@@ -123,7 +130,6 @@ function ChatToOrder() {
         <span className="text-center text-xs text-zinc-400 mt-4">Processamento seguro • Dados não são compartilhados</span>
       </div>
 
-      {/* CARD PEDIDOS */}
       {orders.length === 0 && !loading && (
         <div className="text-center text-sm text-zinc-400 mt-4">
           Nenhum pedido importado ainda.
