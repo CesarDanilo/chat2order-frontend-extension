@@ -33,7 +33,7 @@ function ChatToOrder() {
 
   const openDashboard = () => {
     chrome.tabs.create({
-      url: "https://seusite.com"
+      url: "http://localhost:5173",
     });
   };
 
@@ -50,7 +50,6 @@ function ChatToOrder() {
         tabs[0].id,
         { type: "IMPORT_CONVERSATION" },
         async (response) => {
-
           if (chrome.runtime.lastError || !response?.conversation) {
             setLoading(false);
             return;
@@ -58,16 +57,19 @@ function ChatToOrder() {
 
           try {
             const token = localStorage.getItem("token");
-            const apiResponse = await fetch(import.meta.env.VITE_API_URL + "/parse", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+            const apiResponse = await fetch(
+              import.meta.env.VITE_API_URL + "/parse",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  message: response.conversation.join("\n"),
+                }),
               },
-              body: JSON.stringify({
-                message: response.conversation.join("\n")
-              })
-            });
+            );
 
             if (!apiResponse.ok) {
               throw new Error("Erro na API");
@@ -76,13 +78,12 @@ function ChatToOrder() {
             const order: Order = await apiResponse.json();
 
             setOrders((prev) => [...prev, order]);
-
           } catch (error) {
             console.error(error);
           } finally {
             setLoading(false);
           }
-        }
+        },
       );
     });
   };
@@ -90,7 +91,7 @@ function ChatToOrder() {
   const handleExit = () => {
     localStorage.removeItem("token");
     navigate("/login");
-  }
+  };
 
   return (
     <div className="w-full p-4 bg-zinc-100 min-h-screen flex flex-col items-center gap-4">
@@ -100,14 +101,16 @@ function ChatToOrder() {
             <div className="w-5 h-5">
               <img src={icon} alt="" />
             </div>
-            <h1 className="text-lg font-semibold text-zinc-900">
-              Chat2Order
-            </h1>
+            <h1 className="text-lg font-semibold text-zinc-900">Chat2Order</h1>
           </div>
-          <div onClick={ () => {handleExit()}} className="cursor-pointer">
+          <div
+            onClick={() => {
+              handleExit();
+            }}
+            className="cursor-pointer"
+          >
             <SquareArrowRightExit className="text-zinc-400" />
           </div>
-
         </div>
         <p className="text-sm text-zinc-500">
           Importe a conversa do WhatsApp e gere pedidos automaticamente.
@@ -127,7 +130,9 @@ function ChatToOrder() {
           <SquareArrowRightEnter size={16} />
           {loading ? "Importando..." : "Importar Conversa"}
         </Button>
-        <span className="text-center text-xs text-zinc-400 mt-4">Processamento seguro • Dados não são compartilhados</span>
+        <span className="text-center text-xs text-zinc-400 mt-4">
+          Processamento seguro • Dados não são compartilhados
+        </span>
       </div>
 
       {orders.length === 0 && !loading && (
@@ -158,10 +163,7 @@ function ChatToOrder() {
 
           <div className="flex flex-col gap-2">
             {order.items.map((item) => (
-              <div
-                key={item.id}
-                className="flex justify-between text-sm"
-              >
+              <div key={item.id} className="flex justify-between text-sm">
                 <span>
                   {item.quantity}x {item.productName}
                 </span>
@@ -172,11 +174,8 @@ function ChatToOrder() {
 
           <div className="flex justify-between border-t pt-3 font-semibold">
             <span>Total</span>
-            <span className="text-emerald-600">
-              R$ {order.total}
-            </span>
+            <span className="text-emerald-600">R$ {order.total}</span>
           </div>
-
         </div>
       ))}
 
@@ -185,7 +184,6 @@ function ChatToOrder() {
           Ver Todos os Pedidos
         </Button>
       )}
-
     </div>
   );
 }
