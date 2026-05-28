@@ -1,9 +1,7 @@
 function getConversationText() {
   const messages = document.querySelectorAll("[data-pre-plain-text]");
-  
-  const text = Array.from(messages).map(msg =>
-    msg.textContent
-  );
+
+  const text = Array.from(messages).map((msg) => msg.textContent);
 
   return text;
 }
