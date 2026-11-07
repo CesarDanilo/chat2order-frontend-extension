@@ -196,6 +196,16 @@ function ChatToOrder() {
   };
 
   const handleExit = () => {
+    const token = localStorage.getItem("token");
+
+    // Encerra a sessão também no servidor. Sem rede, o token só expira no prazo normal.
+    if (token) {
+      fetch(import.meta.env.VITE_API_URL + "/auth/logout", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => undefined);
+    }
+
     localStorage.removeItem("token");
 
     navigate("/login");
