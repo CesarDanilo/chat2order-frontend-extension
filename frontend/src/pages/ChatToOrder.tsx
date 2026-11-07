@@ -8,98 +8,21 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { FormAlert } from "@/components/form-feedback";
+import { OrderCard } from "@/components/order-card";
+import { OrderSkeleton } from "@/components/order-skeleton";
+import { OrdersEmptyState } from "@/components/orders-empty-state";
 
 import { ApiError, getGenericErrorMessage, readApiError } from "@/lib/api-error";
+import type { Order } from "@/types/order";
 
 import icon from "../../src/assets/icon.png";
 
-const currencyFormatter = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-});
-
-// Mesma regra do frontend (formatPhone em src/lib/formatters.ts).
-// Vazio vira "-"; "+..." fica como está; 00000000000 é "não informado"; 10 e 11 dígitos ganham máscara.
-function formatPhone(value?: string): string {
-  const text = (value ?? "").trim();
-  if (text === "") return "-";
-  if (text.startsWith("+")) return text;
-
-  const digits = text.replace(/\D/g, "");
-  if (digits === "00000000000") return "Não informado";
-  if (digits.length === 11) {
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-  }
-  if (digits.length === 10) {
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
-  }
-  return text;
-}
-
-type OrderItem = {
-  id: string;
-  productName: string;
-  quantity: number;
-  unitPrice: number;
-  totalPrice: number;
-};
-
-type Order = {
-  id: string;
-  customerName: string;
-  customerPhone: string;
-  address: string;
-  paymentMethod: string;
-  status: string;
-  total: number;
-  source: string;
-  rawMessage: string;
-  createdAt: string;
-  items: OrderItem[];
-};
-
-function OrderSkeleton() {
-  return (
-    <div className="w-[380px] rounded-3xl border border-zinc-200/70 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <Skeleton className="h-3 w-16 rounded-full" />
-
-          <Skeleton className="h-5 w-40 rounded-xl" />
-
-          <Skeleton className="h-4 w-28 rounded-xl" />
-        </div>
-
-        <Skeleton className="h-7 w-20 rounded-full" />
-      </div>
-
-      <div className="mt-4 space-y-2">
-        <Skeleton className="h-3 w-20 rounded-full" />
-
-        <Skeleton className="h-4 w-full rounded-xl" />
-
-        <Skeleton className="h-4 w-2/3 rounded-xl" />
-      </div>
-
-      <div className="mt-5 space-y-3">
-        {Array.from({ length: 2 }).map((_, index) => (
-          <div key={index} className="flex items-center justify-between">
-            <Skeleton className="h-4 w-32 rounded-xl" />
-
-            <Skeleton className="h-4 w-16 rounded-xl" />
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-5 flex items-center justify-between border-t border-zinc-100 pt-4">
-        <Skeleton className="h-4 w-14 rounded-xl" />
-
-        <Skeleton className="h-6 w-24 rounded-xl" />
-      </div>
-    </div>
-  );
-}
+const IMPORT_STEPS = [
+  "Abra o WhatsApp Web",
+  "Clique em importar conversa",
+  "O pedido será gerado automaticamente",
+];
 
 function ChatToOrder() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -212,200 +135,147 @@ function ChatToOrder() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-zinc-50 flex flex-col items-center px-4 py-6 gap-5">
+    <div className="flex min-h-dvh w-full flex-col bg-background">
       {/* HEADER */}
-      <div className="w-[380px] rounded-3xl border border-zinc-200/70 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-100 bg-emerald-50">
-              <img src={icon} alt="Chat2Order" className="h-5 w-5" />
+      <header className="sticky top-0 z-10 border-b border-border bg-background/95 supports-[backdrop-filter]:bg-background/80 supports-[backdrop-filter]:backdrop-blur">
+        <div className="mx-auto flex w-full max-w-md items-center justify-between gap-3 px-4 py-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-accent">
+              <img src={icon} alt="" aria-hidden="true" className="size-5" />
             </div>
 
-            <div>
-              <h1 className="text-base font-semibold text-zinc-900">
+            <div className="min-w-0">
+              <h1 className="text-base font-semibold leading-tight text-foreground">
                 Chat2Order
               </h1>
 
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs leading-snug text-muted-foreground">
                 Importação inteligente de pedidos
               </p>
             </div>
           </div>
 
-          <button
+          <Button
+            variant="ghost"
+            size="icon-lg"
             onClick={handleExit}
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl transition-colors hover:bg-zinc-100"
+            aria-label="Sair da conta"
+            title="Sair da conta"
+            className="shrink-0 text-muted-foreground hover:text-foreground"
           >
-            <SquareArrowRightExit size={18} className="text-zinc-500" />
-          </button>
+            <SquareArrowRightExit aria-hidden="true" />
+          </Button>
         </div>
+      </header>
 
-        <div className="mt-5 space-y-2">
-          <p className="text-sm leading-relaxed text-zinc-600">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-4">
+        {/* IMPORT */}
+        <section
+          aria-label="Importar conversa"
+          className="rounded-2xl border border-border bg-card p-4 shadow-xs"
+        >
+          <p className="text-sm leading-relaxed text-muted-foreground">
             Importe conversas do WhatsApp Web e transforme automaticamente em
             pedidos organizados.
           </p>
 
-          <div className="space-y-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-xs text-zinc-600">
-            <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-semibold text-emerald-700">
-                1
-              </span>
-
-              <p>Abra o WhatsApp Web</p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-semibold text-emerald-700">
-                2
-              </span>
-
-              <p>Clique em importar conversa</p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-semibold text-emerald-700">
-                3
-              </span>
-
-              <p>O pedido será gerado automaticamente</p>
-            </div>
-          </div>
-        </div>
-
-        <Button
-          onClick={handleImport}
-          disabled={loading}
-          className="mt-5 h-11 w-full cursor-pointer rounded-2xl bg-emerald-600 transition-all hover:bg-emerald-700 disabled:opacity-70"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="size-4 animate-spin" />
-              Importando conversa...
-            </>
-          ) : (
-            <>
-              <SquareArrowRightEnter size={16} />
-              Importar conversa
-            </>
-          )}
-        </Button>
-
-        <p className="mt-4 text-center text-[11px] text-zinc-400">
-          A conversa é enviada ao Chat2Order e analisada por IA (Groq). O texto
-          fica salvo junto ao pedido.
-        </p>
-      </div>
-
-      {/* ERROR ALERT */}
-      {errorMessage && (
-        <div className="w-[380px] rounded-2xl border border-red-200 bg-red-50 p-4">
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-red-700">
-              Não foi possível importar a conversa
-            </span>
-
-            <p className="text-xs leading-relaxed text-red-600">
-              {errorMessage}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* SKELETON */}
-      {loading && (
-        <>
-          {Array.from({ length: 2 }).map((_, index) => (
-            <OrderSkeleton key={index} />
-          ))}
-        </>
-      )}
-
-      {/* EMPTY STATE */}
-      {!loading && orders.length === 0 && (
-        <div className="w-[380px] rounded-3xl border border-dashed border-zinc-300 bg-white px-6 py-10 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100">
-            <SquareArrowRightEnter size={20} className="text-zinc-500" />
-          </div>
-
-          <h2 className="text-sm font-medium text-zinc-700">
-            Nenhum pedido importado
-          </h2>
-
-          <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-            Os pedidos importados aparecerão aqui automaticamente.
-          </p>
-        </div>
-      )}
-
-      {/* ORDERS */}
-      {!loading &&
-        orders.map((order) => (
-          <div
-            key={order.id}
-            className="w-[380px] rounded-3xl border border-zinc-200/70 bg-white p-5 shadow-sm transition-all hover:shadow-md"
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs text-zinc-500">Cliente</p>
-
-                <h2 className="font-medium text-zinc-900">
-                  {order.customerName}
-                </h2>
-
-                <p className="text-sm text-zinc-500">
-                  {formatPhone(order.customerPhone)}
-                </p>
-              </div>
-
-              <div className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-                {order.paymentMethod}
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <p className="text-xs text-zinc-500">Endereço</p>
-
-              <p className="text-sm leading-relaxed text-zinc-700">
-                {order.address}
-              </p>
-            </div>
-
-            <div className="mt-5 space-y-3">
-              {order.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between text-sm"
+          <ol className="mt-4 flex flex-col gap-2 rounded-xl bg-muted/60 p-3 text-sm text-foreground">
+            {IMPORT_STEPS.map((step, index) => (
+              <li key={step} className="flex items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-foreground"
                 >
-                  <span className="text-zinc-700">
-                    {item.quantity}x {item.productName}
-                  </span>
+                  {index + 1}
+                </span>
 
-                  <span className="font-medium text-zinc-900">
-                    {currencyFormatter.format(item.totalPrice)}
-                  </span>
-                </div>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+
+          <Button
+            onClick={handleImport}
+            disabled={loading}
+            aria-busy={loading}
+            className="mt-4 h-11 w-full rounded-xl text-sm"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" aria-hidden="true" />
+                Importando conversa...
+              </>
+            ) : (
+              <>
+                <SquareArrowRightEnter aria-hidden="true" />
+                Importar conversa
+              </>
+            )}
+          </Button>
+
+          <p className="mt-3 text-center text-xs leading-relaxed text-muted-foreground">
+            A conversa é enviada ao Chat2Order e analisada por IA (Groq). O texto fica salvo junto ao pedido.
+          </p>
+        </section>
+
+        {/* ERROR */}
+        {errorMessage && (
+          <FormAlert>
+            <p className="font-medium">Não foi possível importar a conversa</p>
+
+            <p className="mt-0.5 text-xs leading-relaxed">{errorMessage}</p>
+          </FormAlert>
+        )}
+
+        {/* ORDERS */}
+        <section aria-labelledby="pedidos-titulo" aria-busy={loading} className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h2 id="pedidos-titulo" className="text-sm font-semibold text-foreground">
+              Pedidos importados
+            </h2>
+
+            {orders.length > 0 && (
+              <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground">
+                {orders.length}
+              </span>
+            )}
+          </div>
+
+          {/* Anuncia o carregamento para leitores de tela. */}
+          <div aria-live="polite" className="sr-only">
+            {loading ? "Importando conversa, aguarde." : ""}
+          </div>
+
+          {loading && (
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: 2 }).map((_, index) => (
+                <OrderSkeleton key={index} />
               ))}
             </div>
+          )}
 
-            <div className="mt-5 flex items-center justify-between border-t border-zinc-100 pt-4">
-              <span className="text-sm text-zinc-500">Total</span>
+          {!loading && orders.length === 0 && <OrdersEmptyState />}
 
-              <span className="text-xl font-bold text-emerald-600">
-                {currencyFormatter.format(order.total)}
-              </span>
-            </div>
-          </div>
-        ))}
+          {!loading && orders.length > 0 && (
+            <ul className="flex flex-col gap-3">
+              {orders.map((order) => (
+                <OrderCard key={order.id} order={order} />
+              ))}
+            </ul>
+          )}
+        </section>
+      </main>
 
       {/* FOOTER */}
-      <Button
-        variant="outline"
-        onClick={openDashboard}
-        className="h-11 rounded-2xl px-6"
-      >
-        Ver todos os pedidos
-      </Button>
+      <footer className="mx-auto w-full max-w-md px-4 pb-6">
+        <Button
+          variant="outline"
+          onClick={openDashboard}
+          className="h-11 w-full rounded-xl"
+        >
+          Ver todos os pedidos
+        </Button>
+      </footer>
     </div>
   );
 }

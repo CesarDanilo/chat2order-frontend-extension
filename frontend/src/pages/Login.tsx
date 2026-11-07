@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import { z } from "zod";
 
+import { Loader2 } from "lucide-react";
+
 import { loginService, registerService } from "@/services/auth/user.service";
 
 import { ApiError, getGenericErrorMessage } from "@/lib/api-error";
@@ -13,6 +15,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 import { Input } from "@/components/ui/input";
+
+import { FieldError, FormAlert } from "@/components/form-feedback";
 
 // =========================
 // SCHEMAS
@@ -135,11 +139,7 @@ function zodFieldErrors(error: z.ZodError): FieldErrors {
   return errors;
 }
 
-function FieldError({ message }: { message?: string }) {
-  if (!message) return null;
-
-  return <p className="text-xs text-red-600">{message}</p>;
-}
+const LABEL_CLASS = "text-sm font-medium text-foreground";
 
 export function Login() {
   // =========================
@@ -294,85 +294,50 @@ export function Login() {
   }
 
   return (
-    <div
-      className="
-        flex min-h-screen w-full
-        items-center justify-center
-        bg-zinc-100
-        p-4
-      "
-    >
-      <Card
-        className="
-          w-full max-w-sm
-          rounded-2xl
-          border-zinc-200
-          shadow-lg
-        "
-      >
-        <CardContent
-          className="
-            flex flex-col gap-6
-            p-6
-          "
-        >
+    <main className="flex min-h-dvh w-full items-center justify-center bg-background px-4 py-8">
+      <Card className="w-full max-w-sm gap-0 rounded-2xl py-0 shadow-sm">
+        <CardContent className="flex flex-col gap-6 p-6">
           {/* HEADER */}
-          <div
-            className="
-              flex flex-col items-center
-              justify-center gap-1
-              text-center
-            "
-          >
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-6">
-                <img src="/icons/icon.png" alt="Chat2Order" />
-              </div>
-
-              <h1
-                className="
-                  text-2xl
-                  font-bold
-                  text-zinc-900
-                "
-              >
-                Bem-vindo
-              </h1>
+          <div className="flex flex-col items-center gap-3 text-center">
+            <div className="flex size-12 items-center justify-center rounded-2xl border border-primary/20 bg-accent">
+              <img src="/icons/icon.png" alt="" aria-hidden="true" className="size-6" />
             </div>
 
-            <p className="text-sm text-zinc-500">
-              {createAccount
-                ? "Crie sua conta para continuar"
-                : "Entre com sua conta para continuar"}
-            </p>
+            <div className="flex flex-col gap-1">
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                Bem-vindo
+              </h1>
+
+              <p className="text-sm text-muted-foreground">
+                {createAccount
+                  ? "Crie sua conta para continuar"
+                  : "Entre com sua conta para continuar"}
+              </p>
+            </div>
           </div>
 
           {/* FORM */}
           <form
             noValidate
+            aria-busy={loading}
             onSubmit={createAccount ? handleRegister : handleLogin}
             className="flex flex-col gap-4"
           >
             {/* EMAIL */}
             <div className="flex flex-col gap-2">
-              <label
-                htmlFor="email"
-                className="
-                  text-sm
-                  font-medium
-                  text-zinc-700
-                "
-              >
+              <label htmlFor="email" className={LABEL_CLASS}>
                 Email
               </label>
 
               <Input
                 id="email"
                 type="email"
+                autoComplete="email"
                 placeholder="seuemail@empresa.com"
                 maxLength={EMAIL_MAX}
                 value={email}
                 aria-invalid={!!fieldErrors.email}
+                aria-describedby={fieldErrors.email ? "email-error" : undefined}
                 onChange={(e) => {
                   setEmail(e.target.value);
 
@@ -380,30 +345,25 @@ export function Login() {
                 }}
               />
 
-              <FieldError message={fieldErrors.email} />
+              <FieldError id="email-error" message={fieldErrors.email} />
             </div>
 
             {/* NAME */}
             {createAccount && (
               <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="name"
-                  className="
-                    text-sm
-                    font-medium
-                    text-zinc-700
-                  "
-                >
+                <label htmlFor="name" className={LABEL_CLASS}>
                   Nome completo
                 </label>
 
                 <Input
                   id="name"
                   type="text"
+                  autoComplete="name"
                   placeholder="César Danilo"
                   maxLength={NAME_MAX}
                   value={name}
                   aria-invalid={!!fieldErrors.name}
+                  aria-describedby={fieldErrors.name ? "name-error" : undefined}
                   onChange={(e) => {
                     setName(e.target.value);
 
@@ -411,30 +371,25 @@ export function Login() {
                   }}
                 />
 
-                <FieldError message={fieldErrors.name} />
+                <FieldError id="name-error" message={fieldErrors.name} />
               </div>
             )}
 
             {/* PASSWORD */}
             <div className="flex flex-col gap-2">
-              <label
-                htmlFor="password"
-                className="
-                  text-sm
-                  font-medium
-                  text-zinc-700
-                "
-              >
+              <label htmlFor="password" className={LABEL_CLASS}>
                 Senha
               </label>
 
               <Input
                 id="password"
                 type="password"
+                autoComplete={createAccount ? "new-password" : "current-password"}
                 placeholder="Digite sua senha"
                 maxLength={createAccount ? PASSWORD_MAX_BYTES : undefined}
                 value={password}
                 aria-invalid={!!fieldErrors.password}
+                aria-describedby={fieldErrors.password ? "password-error" : undefined}
                 onChange={(e) => {
                   setPassword(e.target.value);
 
@@ -442,30 +397,27 @@ export function Login() {
                 }}
               />
 
-              <FieldError message={fieldErrors.password} />
+              <FieldError id="password-error" message={fieldErrors.password} />
             </div>
 
             {/* CONFIRM PASSWORD */}
             {createAccount && (
               <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="confirmPassword"
-                  className="
-                    text-sm
-                    font-medium
-                    text-zinc-700
-                  "
-                >
+                <label htmlFor="confirmPassword" className={LABEL_CLASS}>
                   Confirmar senha
                 </label>
 
                 <Input
                   id="confirmPassword"
                   type="password"
+                  autoComplete="new-password"
                   placeholder="Digite novamente sua senha"
                   maxLength={PASSWORD_MAX_BYTES}
                   value={confirmPassword}
                   aria-invalid={!!fieldErrors.confirmPassword}
+                  aria-describedby={
+                    fieldErrors.confirmPassword ? "confirmPassword-error" : undefined
+                  }
                   onChange={(e) => {
                     setConfirmPassword(e.target.value);
 
@@ -473,18 +425,20 @@ export function Login() {
                   }}
                 />
 
-                <FieldError message={fieldErrors.confirmPassword} />
+                <FieldError
+                  id="confirmPassword-error"
+                  message={fieldErrors.confirmPassword}
+                />
               </div>
             )}
 
-            {formError && (
-              <p role="alert" className="text-sm text-red-600">
-                {formError}
-              </p>
-            )}
+            {formError && <FormAlert>{formError}</FormAlert>}
 
             {formSuccess && (
-              <p role="status" className="text-sm text-emerald-700">
+              <p
+                role="status"
+                className="rounded-xl border border-primary/30 bg-accent px-3 py-2 text-sm text-accent-foreground"
+              >
                 {formSuccess}
               </p>
             )}
@@ -494,12 +448,10 @@ export function Login() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="
-                  w-full
-                  bg-emerald-600
-                  hover:bg-emerald-700
-                "
+                className="h-10 w-full rounded-xl text-sm"
               >
+                {loading && <Loader2 className="animate-spin" aria-hidden="true" />}
+
                 {loading
                   ? createAccount
                     ? "Cadastrando..."
@@ -509,16 +461,10 @@ export function Login() {
                     : "Entrar"}
               </Button>
 
-              <button
+              <Button
                 type="button"
-                className="
-                  mt-2
-                  cursor-pointer
-                  text-sm
-                  text-zinc-600
-                  transition-colors
-                  hover:text-zinc-900
-                "
+                variant="ghost"
+                className="h-9 w-full text-muted-foreground hover:text-foreground"
                 onClick={() => {
                   setCreateAccount(!createAccount);
 
@@ -526,22 +472,16 @@ export function Login() {
                 }}
               >
                 {createAccount ? "Já tenho uma conta" : "Criar conta"}
-              </button>
+              </Button>
             </div>
           </form>
 
           {/* FOOTER */}
-          <p
-            className="
-              text-center
-              text-xs
-              text-zinc-400
-            "
-          >
+          <p className="text-center text-xs text-muted-foreground">
             Chat2Order • Plataforma segura
           </p>
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 }
