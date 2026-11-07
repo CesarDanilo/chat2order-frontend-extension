@@ -111,7 +111,7 @@ function ChatToOrder() {
 
   const openDashboard = () => {
     chrome.tabs.create({
-      url: "http://localhost:5173",
+      url: import.meta.env.VITE_DASHBOARD_URL,
     });
   };
 
@@ -282,7 +282,8 @@ function ChatToOrder() {
         </Button>
 
         <p className="mt-4 text-center text-[11px] text-zinc-400">
-          Processamento seguro • Dados não compartilhados
+          A conversa é enviada ao Chat2Order e analisada por IA (Groq). O texto
+          fica salvo junto ao pedido.
         </p>
       </div>
 
