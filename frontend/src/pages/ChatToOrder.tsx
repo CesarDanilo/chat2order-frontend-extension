@@ -10,7 +10,32 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { ApiError, getGenericErrorMessage, readApiError } from "@/lib/api-error";
+
 import icon from "../../src/assets/icon.png";
+
+const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+});
+
+// Mesma regra do frontend (formatPhone em src/lib/formatters.ts).
+// Vazio vira "-"; "+..." fica como está; 00000000000 é "não informado"; 10 e 11 dígitos ganham máscara.
+function formatPhone(value?: string): string {
+  const text = (value ?? "").trim();
+  if (text === "") return "-";
+  if (text.startsWith("+")) return text;
+
+  const digits = text.replace(/\D/g, "");
+  if (digits === "00000000000") return "Não informado";
+  if (digits.length === 11) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  }
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+  return text;
+}
 
 type OrderItem = {
   id: string;
@@ -132,10 +157,10 @@ function ChatToOrder() {
             );
 
             if (!apiResponse.ok) {
-              const errorData = await apiResponse.json();
-
-              throw new Error(
-                errorData.error || "A IA está temporariamente indisponível.",
+              // Usa `message` da API; corpo que não é JSON cai na mensagem genérica.
+              throw await readApiError(
+                apiResponse,
+                "Não foi possível importar a conversa. Tente novamente.",
               );
             }
 
@@ -153,11 +178,15 @@ function ChatToOrder() {
           } catch (error) {
             console.error(error);
 
-            setErrorMessage(
-              error instanceof Error
-                ? error.message
-                : "Erro ao importar conversa.",
-            );
+            // Erro da API: sem campos na tela, então vai a primeira mensagem de `details` (ou a da API).
+            const message =
+              error instanceof ApiError
+                ? getGenericErrorMessage(error, "Erro ao importar conversa.")
+                : error instanceof Error
+                  ? error.message
+                  : "Erro ao importar conversa.";
+
+            setErrorMessage(message ?? "Erro ao importar conversa.");
           } finally {
             setLoading(false);
           }
@@ -262,7 +291,7 @@ function ChatToOrder() {
         <div className="w-[380px] rounded-2xl border border-red-200 bg-red-50 p-4">
           <div className="flex flex-col gap-1">
             <span className="text-sm font-medium text-red-700">
-              IA temporariamente indisponível
+              Não foi possível importar a conversa
             </span>
 
             <p className="text-xs leading-relaxed text-red-600">
@@ -313,7 +342,9 @@ function ChatToOrder() {
                   {order.customerName}
                 </h2>
 
-                <p className="text-sm text-zinc-500">{order.customerPhone}</p>
+                <p className="text-sm text-zinc-500">
+                  {formatPhone(order.customerPhone)}
+                </p>
               </div>
 
               <div className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
@@ -340,7 +371,7 @@ function ChatToOrder() {
                   </span>
 
                   <span className="font-medium text-zinc-900">
-                    R$ {item.totalPrice}
+                    {currencyFormatter.format(item.totalPrice)}
                   </span>
                 </div>
               ))}
@@ -350,7 +381,7 @@ function ChatToOrder() {
               <span className="text-sm text-zinc-500">Total</span>
 
               <span className="text-xl font-bold text-emerald-600">
-                R$ {order.total}
+                {currencyFormatter.format(order.total)}
               </span>
             </div>
           </div>

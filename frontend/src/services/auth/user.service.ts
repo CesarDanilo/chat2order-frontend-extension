@@ -1,3 +1,5 @@
+import { readApiError } from "@/lib/api-error";
+
 interface LoginRequest {
   email: string;
   password: string;
@@ -12,10 +14,11 @@ interface LoginResponse {
   };
 }
 
-interface RegisterResponse {
-    name: string;
-    email: string;
-    password: string;
+// Body de POST /api/user: somente name, email e password.
+interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
 }
 
 export async function loginService({
@@ -40,43 +43,33 @@ export async function loginService({
   );
 
   if (!response.ok) {
-
-    const error = await response.json();
-
-    throw new Error(
-      error.message || "Erro ao realizar login"
-    );
+    // 401 (INVALID_CREDENTIALS) usa a mensagem do servidor.
+    throw await readApiError(response, "Erro ao realizar login");
   }
 
-  const data = await response.json();
+  const data: LoginResponse = await response.json();
 
   localStorage.setItem("token", data.token);
 
   return data;
 }
 
-export async function registerService({ email, name, password }: RegisterResponse){
-  try{
-    const response = await fetch(import.meta.env.VITE_API_URL + "/user", 
-      {
-        method: "POST",
+export async function registerService({ email, name, password }: RegisterRequest): Promise<void> {
+  const response = await fetch(import.meta.env.VITE_API_URL + "/user", {
+    method: "POST",
 
-        headers: {
-          "Content-Type": "application/json",
-        },
+    headers: {
+      "Content-Type": "application/json",
+    },
 
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-      }),
-    })
+    body: JSON.stringify({
+      name,
+      email,
+      password,
+    }),
+  });
 
-    if(!response){
-      throw new Error("Erro ao realizar cadastro")
-    }
-    return response.ok
-  }catch(error){
-    return error
+  if (!response.ok) {
+    throw await readApiError(response, "Erro ao realizar cadastro");
   }
 }
